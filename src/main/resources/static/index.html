@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        table {
+            font-family: arial, sans-serif;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        td, th {
+            border: 1px solid #dddddd;
+            text-align: left;
+            padding: 8px;
+        }
+
+        tr:nth-child(even) {
+            background-color: #dddddd;
+        }
+    </style>
+</head>
+<body>
+<h2>HTML Table</h2>
+
+<table id="carList">
+
+</table>
+
+<form action="#">
+    <input id="car_number" placeholder="Car number">
+    <input id="car_brand" placeholder="Car brand">
+    <input id="car_color" placeholder="Car color">
+    <input id="car_year" placeholder="Car year">
+    <button onclick="createCar()">Create car</button>
+</form>
+
+<input id="search_field">
+<button onclick="getById()">Get by id</button>
+<script>
+    function getById() {
+        var id = document.getElementById("search_field").value;
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var car = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>Car id</th>\n' +
+                    '        <th>Car number</th>\n' +
+                    '        <th>Car brand</th>\n' +
+                    '        <th>Car color</th>\n' +
+                    '        <th>Car year</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '    </tr>';
+                html = html + '<tr><td>' + car.id + '</td>\n' +
+                    '        <td>' + car.number + '</td>\n' +
+                    '        <td>' + car.brand + '</td>\n' +
+                    '        <td>' + car.color + '</td>\n' +
+                    '        <td>' + car.year + '</td>' +
+                    '        <td><button onclick="deleteCar(' + car.id + ')">Delete</button></td></tr>';
+                document.getElementById("carList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/api/cars/" + id, true);
+        xhttp.send();
+    }
+
+    function deleteCar(carId) {
+        var xhttp = new XMLHttpRequest();
+        xhttp.open("DELETE", "http://localhost:8080/api/cars/" + carId, true);
+        xhttp.send();
+    }
+
+    function createCar() {
+        var carNumber = document.getElementById("car_number").value;
+        var carBrand = document.getElementById("car_brand").value;
+        var carColor = document.getElementById("car_color").value;
+        var carYear = document.getElementById("car_year").value;
+
+        var xmlhttp = new XMLHttpRequest();
+        xmlhttp.open("POST", "http://localhost:8080/api/cars/save");
+        xmlhttp.setRequestHeader("Content-Type", "application/json");
+        xmlhttp.send(JSON.stringify({number: carNumber, brand: carBrand, color: carColor, year: carYear}));
+        loadCars();
+    }
+
+    function loadCars() {
+        var xhttp = new XMLHttpRequest();
+        xhttp.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                var cars = JSON.parse(this.responseText);
+                var html = '<tr>\n' +
+                    '        <th>Car id</th>\n' +
+                    '        <th>Car number</th>\n' +
+                    '        <th>Car brand</th>\n' +
+                    '        <th>Car color</th>\n' +
+                    '        <th>Car year</th>\n' +
+                    '        <th>Delete</th>\n' +
+                    '    </tr>';
+                for (var i = 0; i < cars.length; i++) {
+                    var car = cars[i];
+                    console.log(car);
+                    html = html + '<tr><td>' + car.id + '</td>\n' +
+                        '        <td>' + car.number + '</td>\n' +
+                        '        <td>' + car.brand + '</td>\n' +
+                        '        <td>' + car.color + '</td>\n' +
+                        '        <td>' + car.year + '</td>' +
+                        '        <td><button onclick="deleteCar(' + car.id + ')">Delete</button></td></tr>';
+                }
+                document.getElementById("carList").innerHTML = html;
+            }
+        };
+        xhttp.open("GET", "http://localhost:8080/api/cars/", true);
+        xhttp.send();
+    }
+    loadCars();
+</script>
+</body>
+</html>
